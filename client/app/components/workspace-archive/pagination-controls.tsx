@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -17,11 +18,18 @@ export const PaginationControls = ({
 }: PaginationControlsProps) => {
   return (
     <div className="flex items-center justify-between mt-5">
-      {prevPage !== undefined && (
-        <Button size={"icon"} onClick={() => onPageChange(prevPage + 1)}>
-          <ChevronLeft className="size-5" />
-        </Button>
-      )}
+      <Button
+        size={"icon"}
+        onClick={() => onPageChange(prevPage! + 1)}
+        className={cn(
+          prevPage === undefined
+            ? "opacity-50 cursor-not-allowed"
+            : "opacity-100 cursor-pointer"
+        )}
+      >
+        <ChevronLeft className="size-5" />
+      </Button>
+
       <div className="flex items-center gap-3">
         {[...Array(totalPages)].map((_, index) => (
           <Button
@@ -34,11 +42,18 @@ export const PaginationControls = ({
           </Button>
         ))}
       </div>
-      {nextPage !== undefined && (
-        <Button size={"icon"} onClick={() => onPageChange(nextPage + 1)}>
-          <ChevronRight className="size-5" />
-        </Button>
-      )}
+
+      <Button
+        size={"icon"}
+        onClick={() => onPageChange(nextPage! + 1)}
+        className={cn(
+          nextPage === undefined
+            ? "opacity-50 cursor-not-allowed"
+            : "opacity-100 cursor-pointer"
+        )}
+      >
+        <ChevronRight className="size-5" />
+      </Button>
     </div>
   );
 };

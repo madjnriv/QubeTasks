@@ -57,6 +57,15 @@ const WorkspaceArchive = () => {
     setLocalSearch("");
   }, [workspaceId]);
 
+  useEffect(() => {
+    const hasActiveFilters =
+      search !== "" || status !== "All" || priority !== "All";
+
+    if (hasActiveFilters && page !== 1) {
+      setFilters({ page: 1 });
+    }
+  }, [search, status, priority, setFilters]);
+
   const { data: projects, isPending: projectIsPending } =
     useGetWorkspaceProjectArchive(
       workspaceId as string,
@@ -313,16 +322,26 @@ const WorkspaceArchive = () => {
           {projectIsPending ? (
             <Loader />
           ) : projects.data && projects.data.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
-              {projects.data.map((project) => (
-                <ArchiveProjects
-                  key={project._id}
-                  project={project}
-                  workspaceId={workspaceId}
-                />
-              ))}
+            <div>
+              <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
+                {projects.data.map((project) => (
+                  <ArchiveProjects
+                    key={project._id}
+                    project={project}
+                    workspaceId={workspaceId}
+                  />
+                ))}
+              </div>
 
-              {projects.totalPages > 1 && <PaginationControls />}
+              {projects.totalPages > 1 && (
+                <PaginationControls
+                  totalPages={projects.totalPages}
+                  nextPage={projects.nextPage}
+                  prevPage={projects.prevPage}
+                  currentPage={projects.page}
+                  onPageChange={selectPageHandler}
+                />
+              )}
             </div>
           ) : (
             <NoDataFound
@@ -336,14 +355,16 @@ const WorkspaceArchive = () => {
           {taskIsPending ? (
             <Loader />
           ) : tasks.data && tasks.data.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
-              {tasks.data.map((task) => (
-                <ArchivedTasks
-                  key={task._id}
-                  task={task}
-                  workspaceId={workspaceId}
-                />
-              ))}
+            <div>
+              <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
+                {tasks.data.map((task) => (
+                  <ArchivedTasks
+                    key={task._id}
+                    task={task}
+                    workspaceId={workspaceId}
+                  />
+                ))}
+              </div>
               {tasks.totalPages > 1 && (
                 <PaginationControls
                   totalPages={tasks.totalPages}
