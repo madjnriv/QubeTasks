@@ -28,7 +28,7 @@ export const useToggleProjectArchive = () => {
       updateData(`/projects/${data.projectId}/archive`),
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({
-        queryKey: ["workspace", data.workspace, "archive"],
+        queryKey: ["workspace", data.workspace, "archive-projects"],
       });
       queryClient.invalidateQueries({
         queryKey: ["project", data.project],

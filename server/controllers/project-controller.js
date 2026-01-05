@@ -157,12 +157,12 @@ const archiveProject = async (req, res) => {
       });
     }
 
-    const allowedRoles = ["manager"];
-    if (!allowedRoles.includes(isMember.role)) {
-      return res.status(403).json({
-        message: "Only project managers can archive projects",
-      });
-    }
+    // const allowedRoles = ["manager"];
+    // if (!allowedRoles.includes(isMember.role)) {
+    //   return res.status(403).json({
+    //     message: "Only project managers can archive projects",
+    //   });
+    // }
 
     const isArchived = project.isArchived;
 

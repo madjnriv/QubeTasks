@@ -1,9 +1,9 @@
 import type { User } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
 import { queryClient } from "./react-query-provider";
-import { useLocation, useNavigate } from "react-router";
-import { publicRoutes } from "@/lib";
+import { useNavigate } from "react-router";
 import { useUserProfileQuery } from "@/hooks/use-user";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
@@ -18,37 +18,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const navigate = useNavigate();
-  const currentPath = useLocation().pathname;
-  const isPublicRoute = publicRoutes.includes(currentPath);
+  // const currentPath = useLocation().pathname;
+  // const isPublicRoute = publicRoutes.includes(currentPath);
 
-  const { data, isError, isFetching } = useUserProfileQuery(token) as {
+  const { data, isError } = useUserProfileQuery(token) as {
     data: User;
-    isFetching: boolean;
     isError: boolean;
   };
-
-  // check authentication on mount
-  useEffect(() => {
-    if (data) {
-      setUser(data);
-      setIsAuthenticated(true);
-    } else if (isError) {
-      logout();
-    }
-  }, [data, isError]);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     if (savedToken) {
       setToken(savedToken);
-    } else if (!savedToken && !isPublicRoute) {
-      logout();
+    } else {
+      setIsLoading(false);
     }
   }, []);
+
+  // check authentication on mount
+  useEffect(() => {
+    if (token) {
+      if (data) {
+        setUser(data);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+      } else if (isError) {
+        setIsLoading(false);
+        logout();
+        toast.error("Session expired. Please log in again.", {
+          id: "auth-status",
+        });
+      }
+    }
+  }, [data, isError, token]);
 
   // For force-logout
   // useEffect(() => {
@@ -73,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setIsAuthenticated(false);
     setToken(null);
-    setIsLoading(false);
     queryClient.clear();
     navigate("/");
   };
@@ -81,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const values = {
     user,
     isAuthenticated,
-    isLoading: isFetching,
+    isLoading,
     login,
     logout,
   };

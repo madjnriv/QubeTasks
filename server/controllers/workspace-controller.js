@@ -6,6 +6,7 @@ import UserModel from "../models/user-model.js";
 import WorkspaceInviteModel from "../models/workspace-invite.js";
 import WorkspaceModel from "../models/workspace-model.js";
 import jwt from "jsonwebtoken";
+import { paginateFn } from "../utils/paginate-fn.js";
 
 const createWorkSpace = async (req, res) => {
   try {
@@ -535,10 +536,9 @@ const acceptInviteByToken = async (req, res) => {
   }
 };
 
-const getWorkspaceArchive = async (req, res) => {
+const getWorkspaceProjectArchive = async (req, res) => {
   try {
     const { workspaceId } = req.params;
-
     const workspace = await WorkspaceModel.findById(workspaceId);
 
     if (!workspace) {
@@ -557,27 +557,112 @@ const getWorkspaceArchive = async (req, res) => {
       });
     }
 
-    const [totalArchivedProjects, archivedProjects] = await Promise.all([
-      ProjectModel.countDocuments({ workspace: workspaceId, isArchived: true }),
-      ProjectModel.find({ workspace: workspaceId, isArchived: true })
-        .populate("tasks", "title status dueDate project updatedAt priority")
-        .sort({ createdAt: -1 }),
-    ]);
+    const page = req.query.page ? parseInt(req.query.page) - 1 || 0 : 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "All";
+    const sortBy = req.query.sortBy;
 
-    const [totalArchivedTasks, archivedTasks] = await Promise.all([
-      TaskModel.countDocuments({ workspace: workspaceId, isArchived: true }),
-      TaskModel.find({ workspace: workspaceId, isArchived: true })
-        .populate("project", "title _id")
-        .populate("assignees", "name profilePicture")
-        .sort({ createdAt: -1 }),
-    ]);
+    const query = {
+      workspace: workspaceId,
+      isArchived: true,
+    };
 
-    res.status(200).json({
-      archivedProjects,
-      totalArchivedProjects,
-      archivedTasks,
-      totalArchivedTasks,
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    if (status !== "All") {
+      query.status = status;
+    }
+
+    const projects = await paginateFn({
+      model: ProjectModel,
+      query,
+      page,
+      limit,
+      sortBy,
+      populateOptions: [
+        {
+          path: "tasks",
+          select: "title status dueDate project updatedAt priority",
+        },
+      ],
     });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+const getWorkspaceTaskArchive = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const workspace = await WorkspaceModel.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+
+    const isMember = workspace.members.some(
+      (member) => member.user.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({
+        message: "You are not a member of this workspace",
+      });
+    }
+
+    const page = req.query.page ? parseInt(req.query.page) - 1 || 0 : 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "All";
+    const priority = req.query.priority || "All";
+    const sortBy = req.query.sortBy;
+
+    const query = {
+      workspace: workspaceId,
+      isArchived: true,
+    };
+
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    if (status !== "All") {
+      query.status = status;
+    }
+
+    if (priority !== "All") {
+      query.priority = priority;
+    }
+
+    const tasks = await paginateFn({
+      model: TaskModel,
+      query,
+      page,
+      limit,
+      sortBy,
+      populateOptions: [
+        {
+          path: "project",
+          select: "title _id",
+        },
+        {
+          path: "assignees",
+          select: "name profilePicture",
+        },
+      ],
+    });
+
+    res.status(200).json(tasks);
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -595,5 +680,6 @@ export {
   inviteUserToWorkspace,
   acceptGeneralInvite,
   acceptInviteByToken,
-  getWorkspaceArchive,
+  getWorkspaceProjectArchive,
+  getWorkspaceTaskArchive,
 };

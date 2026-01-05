@@ -37,8 +37,6 @@ export const WorkspaceHeader = ({
   onCreateProject,
   onInviteMember,
 }: WorkspaceHeaderProps) => {
-  console.log(members);
-
   return (
     <div className="space-y-8">
       <div className="space-y-3">

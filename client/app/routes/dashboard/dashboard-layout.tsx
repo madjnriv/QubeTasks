@@ -5,19 +5,27 @@ import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import { getData } from "@/lib/fetch-utils";
 import { useAuth } from "@/provider/auth-context";
 import type { WorkSpace } from "@/types";
-import { useState } from "react";
-import { Navigate, Outlet } from "react-router";
+import { useEffect, useState } from "react";
+import { Outlet, redirect, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export const clientLoader = async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return { workspaces: [] };
+  }
+
   try {
     const [workspaces] = await Promise.all([getData("/workspaces")]);
-    return { workspaces };
+    return { workspaces: workspaces || [] };
   } catch (error) {
     console.log(error);
   }
 };
 
 const DashboardLayout = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
   const [isCreatingWorkspace, setIsCreatingWorkspace] =
     useState<boolean>(false);
@@ -29,12 +37,25 @@ const DashboardLayout = () => {
     setCurrentWorkspace(workspace);
   };
 
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast.error("Session expired. Please log in again.", {
+        id: "auth-status",
+      });
+      navigate("/sign-in");
+    }
+  }, [isLoading, isAuthenticated, navigate]);
+
   if (isLoading) {
-    return <Loader />;
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Loader />
+      </div>
+    );
   }
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
-  }
+
+  if (!isAuthenticated) return null;
+
   return (
     <div className="flex h-screen w-full ">
       <Sidebar currentWorkspace={currentWorkspace} />

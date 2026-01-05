@@ -11,11 +11,12 @@ import {
   acceptGeneralInvite,
   acceptInviteByToken,
   createWorkSpace,
-  getWorkspaceArchive,
   getWorkSpaceDetails,
+  getWorkspaceProjectArchive,
   getWorkSpaces,
   getWorkSpacesProjects,
   getWorkSpaceStats,
+  getWorkspaceTaskArchive,
   inviteUserToWorkspace,
 } from "../controllers/workspace-controller.js";
 
@@ -77,10 +78,16 @@ router.get(
   getWorkSpacesProjects
 );
 router.get(
-  "/:workspaceId/archive",
+  "/:workspaceId/archive/projects",
   authMiddleware,
   validateRequest({ params: z.object({ workspaceId: z.string() }) }),
-  getWorkspaceArchive
+  getWorkspaceProjectArchive
+);
+router.get(
+  "/:workspaceId/archive/tasks",
+  authMiddleware,
+  validateRequest({ params: z.object({ workspaceId: z.string() }) }),
+  getWorkspaceTaskArchive
 );
 
 export default router;

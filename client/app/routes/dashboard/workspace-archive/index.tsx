@@ -1,32 +1,103 @@
 import Loader from "@/components/loader";
 import { NoDataFound } from "@/components/no-data-found";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArchiveProjects } from "@/components/workspace-archive/archived-projects";
 import { ArchivedTasks } from "@/components/workspace-archive/archived-tasks";
-import { useGetWorkspaceArchive } from "@/hooks/use-workspace";
+import { PaginationControls } from "@/components/workspace-archive/pagination-controls";
+import { useArchiveQueryFilters } from "@/hooks/use-archive-query-filters";
+import { useDebounce } from "@/hooks/use-debounce";
+import {
+  useGetWorkspaceProjectArchive,
+  useGetWorkspaceTaskArchive,
+} from "@/hooks/use-workspace";
 import type { Project, Task } from "@/types";
-import { Search, Settings2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 
 const WorkspaceArchive = () => {
   const [searchParams] = useSearchParams();
   const workspaceId = searchParams.get("workspaceId");
   const [isTaskArchive, setIsTaskArchive] = useState<boolean>(false);
+  const [localSearch, setLocalSearch] = useState<string>("");
 
-  const { data, isPending } = useGetWorkspaceArchive(workspaceId as string) as {
+  const { search, status, priority, sortBy, page, setFilters, resetFilters } =
+    useArchiveQueryFilters();
+
+  const debouncedSearch = useDebounce(localSearch, 500);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  useEffect(() => {
+    setFilters({ search: debouncedSearch });
+  }, [debouncedSearch, setFilters]);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+
+    resetFilters();
+    setLocalSearch("");
+  }, [workspaceId]);
+
+  const { data: projects, isPending: projectIsPending } =
+    useGetWorkspaceProjectArchive(
+      workspaceId as string,
+      {
+        page,
+        search,
+        status,
+        sortBy,
+      },
+      !isTaskArchive
+    ) as {
+      data: {
+        data: Project[];
+        page: number;
+        total: number;
+        totalPages: number;
+        nextPage?: number;
+        prevPage?: number;
+      };
+      isPending: boolean;
+    };
+
+  const { data: tasks, isPending: taskIsPending } = useGetWorkspaceTaskArchive(
+    workspaceId as string,
+    { page, search, status, priority, sortBy },
+    isTaskArchive
+  ) as {
     data: {
-      archivedProjects: Project[];
-      archivedTasks: Task[];
-      totalArchivedProjects: number;
-      totalArchivedTasks: number;
+      data: Task[];
+      page: number;
+      total: number;
+      totalPages: number;
+      nextPage?: number;
+      prevPage?: number;
     };
     isPending: boolean;
   };
 
-  console.log(data);
+  const selectPageHandler = (pageNumber: number) => {
+    setFilters({ page: pageNumber });
+  };
 
   if (!workspaceId)
     return (
@@ -36,8 +107,6 @@ const WorkspaceArchive = () => {
         className="mt-6"
       />
     );
-
-  if (isPending) return <Loader />;
 
   return (
     <div className="py-6 space-y-5">
@@ -55,6 +124,8 @@ const WorkspaceArchive = () => {
             <div className="flex items-center gap-2 border border-border rounded-full px-2 py-2 w-full md:max-w-md">
               <Search className="size-5 text-muted-foreground" />
               <input
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
                 placeholder="Search archived projects"
                 className="w-full outline-none text-sm"
               />
@@ -64,7 +135,60 @@ const WorkspaceArchive = () => {
               size={"icon"}
               className="text-primary cursor-pointer shadow-none rounded-full"
             >
-              <Settings2 className="size-5 text-muted-foreground" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SlidersHorizontal className="size-5 text-muted-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="mr-3 md:mr-47 mt-3 w-56 pb-3">
+                  <DropdownMenuLabel>Filter Projects</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex-col items-start justify-normal focus:bg-transparent">
+                    <p>Status: </p>
+                    <Select
+                      defaultValue={status}
+                      onValueChange={(value) => {
+                        setFilters({ status: value });
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="All">All</SelectItem>
+                        <SelectItem value="Planning">Planning</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="On Hold">On Hold</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem className="flex-col items-start justify-normal focus:bg-transparent">
+                    <p>Sort By:</p>
+                    <Select
+                      defaultValue={sortBy}
+                      onValueChange={(value) => {
+                        setFilters({ sortBy: value as "asc" | "desc" });
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Sort By" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="desc">
+                          Newest <ArrowRight className="inline" /> Oldest
+                        </SelectItem>
+                        <SelectItem value="asc">
+                          Oldest <ArrowRight className="inline" /> Newest
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </Button>
           </div>
         ) : (
@@ -72,6 +196,8 @@ const WorkspaceArchive = () => {
             <div className="flex items-center gap-2 border border-border rounded-full px-2 py-2 w-full md:max-w-md">
               <Search className="size-5 text-muted-foreground" />
               <input
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
                 placeholder="Search archived tasks"
                 className="w-full outline-none text-sm"
               />
@@ -81,7 +207,79 @@ const WorkspaceArchive = () => {
               size={"icon"}
               className="text-primary cursor-pointer shadow-none rounded-full"
             >
-              <Settings2 className="size-5 text-muted-foreground" />
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <SlidersHorizontal className="size-5 text-muted-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="mr-3 md:mr-47 mt-3 w-56 pb-3">
+                  <DropdownMenuLabel>Filter Tasks</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex-col items-start justify-normal focus:bg-transparent">
+                    <p>Status: </p>
+                    <Select
+                      defaultValue={status}
+                      onValueChange={(value) => {
+                        setFilters({ status: value });
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="All">All</SelectItem>
+                        <SelectItem value="To Do">To Do</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="Done">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem className="flex-col items-start justify-normal focus:bg-transparent">
+                    <Select
+                      defaultValue={priority}
+                      onValueChange={(value) => {
+                        setFilters({ priority: value });
+                      }}
+                    >
+                      <p>Priority: </p>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Priority" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="All">All</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem className="flex-col items-start justify-normal focus:bg-transparent">
+                    <p>Sort By:</p>
+                    <Select
+                      defaultValue={sortBy}
+                      onValueChange={(value) => {
+                        setFilters({ sortBy: value as "asc" | "desc" });
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Sort By" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="desc">
+                          Newest <ArrowRight className="inline" /> Oldest
+                        </SelectItem>
+                        <SelectItem value="asc">
+                          Oldest <ArrowRight className="inline" /> Newest
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </Button>
           </div>
         )}
@@ -89,26 +287,43 @@ const WorkspaceArchive = () => {
 
       <Tabs defaultValue="projects" className="mt-5">
         <TabsList>
-          <TabsTrigger value="projects" onClick={() => setIsTaskArchive(false)}>
+          <TabsTrigger
+            value="projects"
+            onClick={() => {
+              setIsTaskArchive(false);
+              resetFilters();
+              setLocalSearch("");
+            }}
+          >
             Archived Projects
           </TabsTrigger>
-          <TabsTrigger value="tasks" onClick={() => setIsTaskArchive(true)}>
+          <TabsTrigger
+            value="tasks"
+            onClick={() => {
+              setIsTaskArchive(true);
+              resetFilters();
+              setLocalSearch("");
+            }}
+          >
             Archived Tasks
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value="projects"
-          className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {data.archivedProjects.length > 0 ? (
-            data.archivedProjects.map((project) => (
-              <ArchiveProjects
-                key={project._id}
-                project={project}
-                workspaceId={workspaceId}
-              />
-            ))
+        <TabsContent value="projects">
+          {projectIsPending ? (
+            <Loader />
+          ) : projects.data && projects.data.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
+              {projects.data.map((project) => (
+                <ArchiveProjects
+                  key={project._id}
+                  project={project}
+                  workspaceId={workspaceId}
+                />
+              ))}
+
+              {projects.totalPages > 1 && <PaginationControls />}
+            </div>
           ) : (
             <NoDataFound
               title="No Archived Projects"
@@ -117,18 +332,28 @@ const WorkspaceArchive = () => {
             />
           )}
         </TabsContent>
-        <TabsContent
-          value="tasks"
-          className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {data.archivedTasks.length > 0 ? (
-            data.archivedTasks.map((task) => (
-              <ArchivedTasks
-                key={task._id}
-                task={task}
-                workspaceId={workspaceId}
-              />
-            ))
+        <TabsContent value="tasks">
+          {taskIsPending ? (
+            <Loader />
+          ) : tasks.data && tasks.data.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-2 lg:grid-cols-3">
+              {tasks.data.map((task) => (
+                <ArchivedTasks
+                  key={task._id}
+                  task={task}
+                  workspaceId={workspaceId}
+                />
+              ))}
+              {tasks.totalPages > 1 && (
+                <PaginationControls
+                  totalPages={tasks.totalPages}
+                  nextPage={tasks.nextPage}
+                  prevPage={tasks.prevPage}
+                  currentPage={tasks.page}
+                  onPageChange={selectPageHandler}
+                />
+              )}
+            </div>
           ) : (
             <NoDataFound
               title="No Archived Tasks"

@@ -12,9 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
+import {
+  Link,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import WorkspaceAvatar from "../workspace/workspace-avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertDialog } from "../alert-dialog";
 
 interface HeaderProps {
@@ -29,11 +35,23 @@ const Header = ({
   onCreateWorkspace,
 }: HeaderProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const workspaceIdFromURL = searchParams.get("workspaceId");
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [isAlert, setIsAlert] = useState<boolean>(false);
   const { user, logout } = useAuth();
-  const { workspaces } = useLoaderData() as { workspaces: WorkSpace[] };
+  const { workspaces = [] } =
+    (useLoaderData() as { workspaces: WorkSpace[] }) || {};
   const isOnWorkspacePage = useLocation().pathname.includes("/workspace");
+
+  useEffect(() => {
+    if (!selectedWorkspace && workspaceIdFromURL) {
+      const ws = workspaces.find((w) => w._id === workspaceIdFromURL);
+      if (ws) {
+        onWorkspaceSelected(ws);
+      }
+    }
+  }, [workspaceIdFromURL, workspaces]);
 
   const handleOnClick = (workspace: WorkSpace) => {
     onWorkspaceSelected(workspace);

@@ -1,6 +1,7 @@
 import type { WorkspaceFormData } from "@/components/workspace/create-workspace";
 import { getData, postData } from "@/lib/fetch-utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { FiltersTypes } from "./use-archive-query-filters";
 
 export const useCreateWorkspace = () => {
   return useMutation({
@@ -30,11 +31,33 @@ export const useGetWorkspaceStatsQuery = (workspaceId: string) => {
   });
 };
 
-export const useGetWorkspaceArchive = (workspaceId: string) => {
+export const useGetWorkspaceProjectArchive = (
+  workspaceId: string,
+  filter: FiltersTypes,
+  enabled: boolean
+) => {
   return useQuery({
-    queryKey: ["workspace", workspaceId, "archive"],
-    queryFn: async () => getData(`/workspaces/${workspaceId}/archive`),
-    enabled: Boolean(workspaceId),
+    queryKey: ["workspace", workspaceId, "archive-projects", filter],
+    queryFn: async () =>
+      getData(
+        `/workspaces/${workspaceId}/archive/projects?limit=10&search=${filter.search || ""}&status=${filter.status || ""}&sortBy=${filter.sortBy || "desc"}&page=${filter.page || 1}`
+      ),
+    enabled: Boolean(workspaceId) && enabled,
+  });
+};
+
+export const useGetWorkspaceTaskArchive = (
+  workspaceId: string,
+  filter: FiltersTypes,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: ["workspace", workspaceId, "archive-tasks", filter],
+    queryFn: async () =>
+      getData(
+        `/workspaces/${workspaceId}/archive/tasks?limit=10&search=${filter.search || ""}&status=${filter.status || ""}&priority=${filter.priority || ""}&sortBy=${filter.sortBy || "desc"}&page=${filter.page || 1}`
+      ),
+    enabled: Boolean(workspaceId) && enabled,
   });
 };
 
