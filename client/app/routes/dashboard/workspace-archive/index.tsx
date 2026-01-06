@@ -118,7 +118,7 @@ const WorkspaceArchive = () => {
     );
 
   return (
-    <div className="py-6 space-y-5">
+    <div className="pt-6 space-y-5 pb-15">
       <div className="w-full md:max-w-2xl">
         <p className="text-xl font-semibold text-primary">Archive</p>
         <p className="text-sm text-muted-foreground font-medium">
