@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -19,11 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useUpdateUserProfile } from "@/hooks/use-user";
 import { profileSchema } from "@/lib/schema";
 import type { User } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import { Camera } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
@@ -39,17 +42,20 @@ export const ManageProfileDrawer = ({
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
-  const [name, setName] = useState<string>(user?.name);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || "",
+      username: user?.username || "",
       profilePicture: user?.profilePicture || "",
     },
     values: {
       name: user?.name || "",
       profilePicture: user?.profilePicture || "",
+      username: user?.username || "",
     },
   });
 
@@ -57,7 +63,11 @@ export const ManageProfileDrawer = ({
 
   const handleProfileFormSubmit = (values: ProfileFormData) => {
     updateUserProfile(
-      { name: values.name, profilePicture: values.profilePicture || "" },
+      {
+        name: values.name,
+        username: values.username,
+        profilePicture: values.profilePicture || "",
+      },
       {
         onSuccess: () => {
           toast.success("Profile updated successfully");
@@ -72,6 +82,15 @@ export const ManageProfileDrawer = ({
       }
     );
   };
+
+  useEffect(() => {
+    if (imageFile) {
+      const url = URL.createObjectURL(imageFile);
+      setImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [imageFile]);
+
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent>
@@ -83,20 +102,55 @@ export const ManageProfileDrawer = ({
           </DrawerDescription>
         </DrawerHeader>
 
-        <Card className="shadow-none! border-0">
+        <Card className="shadow-none! border-0 overflow-y-auto ">
           <CardContent>
             <Form {...form}>
               <form
                 className="space-y-6"
                 onSubmit={form.handleSubmit(handleProfileFormSubmit)}
               >
-                <div>
-                  <Avatar className="size-25 bg-gray-600">
-                    <AvatarImage src={user?.profilePicture} alt={user?.name} />
-                    <AvatarFallback className="text-4xl">
-                      {user?.name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                <div className="w-fit relative">
+                  <Label htmlFor="profilePic">
+                    <Avatar className="size-27 bg-gray-600">
+                      <AvatarImage
+                        src={imageUrl ? imageUrl : user?.profilePicture}
+                        alt={user?.name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="text-4xl">
+                        {user?.name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="w-10 h-10 flex items-center justify-center rounded-full bg-primary absolute bottom-1 -right-1 border-5 border-card">
+                      <Camera className="size-4.5 text-primary-foreground" />
+                    </span>
+                  </Label>
+
+                  <FormField
+                    control={form.control}
+                    name="profilePicture"
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...fieldProps}
+                            type="file"
+                            hidden
+                            id="profilePic"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setImageFile(file);
+                                form.setValue("profilePicture", file);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <FormField
@@ -105,6 +159,20 @@ export const ManageProfileDrawer = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-primary">Full Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">Username</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>

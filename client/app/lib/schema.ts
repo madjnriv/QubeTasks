@@ -90,5 +90,27 @@ export const changePasswordSchema = z
 
 export const profileSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  profilePicture: z.string().optional(),
+  username: z
+    .string()
+    .min(6, { message: "username is required" })
+    .max(10, { message: "username must be between 6 to 10 characters long" })
+    .optional(),
+  profilePicture: z
+    .union([
+      z
+        .instanceof(File)
+        .refine(
+          (file) =>
+            [
+              "image/png",
+              "image/jpeg",
+              "image/jpg",
+              "image/svg+xml",
+              "image/gif",
+            ].includes(file.type),
+          { message: "Invalid image file type" }
+        ),
+      z.string(),
+    ])
+    .optional(),
 });

@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import UserModel from "../models/user-model.js";
+import imageKit from "../config/imagekit.js";
+import fs from "fs";
 
 const getUserProfile = async (req, res) => {
   try {
@@ -20,19 +22,64 @@ const getUserProfile = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
-    const { name, profilePicture } = req.body;
+    console.log("Function started");
 
-    const user = await UserModel.findById(req.user._id);
+    const { name } = req.body;
+    const profilePicture = req.file;
+    console.log("profile pic", req.file);
 
-    if (!user) {
+    const userExists = await UserModel.exists({ _id: req.user._id });
+
+    if (!userExists) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.name = name;
-    user.profilePicture = profilePicture;
+    console.log("user checked");
 
-    await user.save();
+    let profilePictureURL;
+    if (profilePicture) {
+      const uploadResponse = await imageKit.files.upload({
+        file: fs.createReadStream(req.file.path),
+        fileName: `avatar_${req.user._id}_${Date.now()}`,
+        folder: "/QubeTask/users",
+      });
 
+      console.log("image buffered", profilePictureURL);
+
+      profilePictureURL = imageKit.helper.buildSrc({
+        src: uploadResponse.url,
+        transformation: [
+          {
+            quality: 80,
+            format: "webp",
+            width: 128,
+            height: 128,
+            focus: "auto",
+          },
+        ],
+      });
+    }
+
+    console.log("image optimized", profilePictureURL);
+
+    const updateData = {};
+    if (name && name.trim()) {
+      updateData.name = name.trim();
+    }
+    if (profilePictureURL) {
+      updateData.profilePicture = profilePictureURL;
+    }
+
+    // If nothing to update, return early
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No data to update" });
+    }
+
+    const user = await UserModel.findByIdAndUpdate(req.user._id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+    console.log("saved to db");
     res.status(200).json(user);
   } catch (error) {
     console.error("Error updating user profile:", error);

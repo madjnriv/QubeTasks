@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const ProfileCard = ({ user }: { user: User }) => {
+  console.log(user?.profilePicture);
+
   return (
     <Card className="py-2">
       <CardContent className=" flex items-center gap-3 px-3">

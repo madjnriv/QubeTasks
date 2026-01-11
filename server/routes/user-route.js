@@ -7,6 +7,7 @@ import {
   updateUserProfile,
 } from "../controllers/user-controller.js";
 import authMiddleware from "../middleware/auth-middleware.js";
+import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
@@ -14,10 +15,10 @@ router.get("/profile", authMiddleware, getUserProfile);
 router.put(
   "/profile",
   authMiddleware,
+  upload.single("profilePicture"),
   validateRequest({
     body: z.object({
-      name: z.string(),
-      profilePicture: z.string().optional(),
+      name: z.string().optional(),
     }),
   }),
   updateUserProfile
