@@ -1,6 +1,6 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { socialProofImages } from "public/assets/assets";
+import { socialProofImages } from "@/assets/assets";
 import React from "react";
 
 export const SocialProof = React.memo(() => {

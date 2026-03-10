@@ -26,14 +26,17 @@ export const Navbar = React.memo(() => {
       </Link>
 
       <div className="flex items-center gap-5 lg:hidden">
-        <Link to="/sign-in">
-          <Button>
-            Open App <ArrowUpRight />
+        <Link to="/sign-in" className="flex items-center -space-x-1">
+          <Button className="rounded-full">
+            Open App 
+          </Button>
+          <Button size={"icon"} className="rounded-full">
+            <ArrowUpRight />
           </Button>
         </Link>
         <Sheet>
           <SheetTrigger>
-            <Button size={"icon"}>
+            <Button size={"icon"} className="rounded-full">
               <Menu />
             </Button>
           </SheetTrigger>
@@ -63,11 +66,14 @@ export const Navbar = React.memo(() => {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <Link to="/sign-in" className="hidden lg:block">
-        <Button>
-          Open App <ArrowUpRight />
-        </Button>
-      </Link>
+      <Link to="/sign-in" className="hidden lg:flex items-center -space-x-1">
+          <Button className="rounded-full">
+            Open App 
+          </Button>
+          <Button size={"icon"} className="rounded-full">
+            <ArrowUpRight />
+          </Button>
+        </Link>
     </div>
   );
 });

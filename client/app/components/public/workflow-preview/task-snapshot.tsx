@@ -1,5 +1,4 @@
 import React from "react";
-import task_snapshot_img from "../../../../public/assets/task_snapshot.jpg";
 import {
   Item,
   ItemContent,

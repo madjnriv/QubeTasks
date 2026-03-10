@@ -2,7 +2,7 @@ import { LogoIcon } from "@/components/logo";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Link, ListChecks, MessageCircle } from "lucide-react";
-import { socialProofImages } from "public/assets/assets";
+import { socialProofImages } from "@/assets/assets";
 import React from "react";
 
 export const TeamCard = React.memo(() => {

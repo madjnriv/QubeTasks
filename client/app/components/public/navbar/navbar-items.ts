@@ -9,16 +9,20 @@ export const landingNav: LandingNavItem[] = [
     path: "/",
   },
   {
+    label: "About",
+    path: "/about",
+  },
+  {
     label: "Features",
     path: "/features",
   },
   {
-    label: "Demo",
-    path: "/demo",
+    label: "Testimonials",
+    path: "/testimonials",
   },
   {
-    label: "About",
-    path: "/about",
+    label: "Pricing",
+    path: "/pricing",
   },
   {
     label: "Contact",
