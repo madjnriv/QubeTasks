@@ -20,7 +20,7 @@ import {
 
 export const Navbar = React.memo(() => {
   return (
-    <div className="flex items-center justify-between p-3">
+    <div className="flex items-center justify-between p-3 lg:w-[90%] lg:mx-auto">
       <Link to="/">
         <LogoText className="text-2xl font-semibold text-primary" />
       </Link>

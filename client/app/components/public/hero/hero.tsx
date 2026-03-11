@@ -1,21 +1,33 @@
 import React from "react";
 import { SocialProof } from "./social-proof";
-import { HeroDemoBar } from "./hero-demo-bar";
+import HeroTag from "./hero-tag";
+import { heroData } from "./hero.data";
+import HeroCTA from "./hero-cta";
 
-export const Hero = React.memo(() => {
+export const Hero = () => {
   return (
     <div className="p-5 flex flex-col items-center mt-10">
       <SocialProof />
-      <div className="text-center mt-7 lg:mt-10">
-        <p className="text-xl font-semibold text-primary lg:w-[70%] lg:mx-auto lg:text-4xl">
-          Manage Tasks, Projects, and Teams in One Workspace
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground lg:w-[70%] lg:mx-auto lg:text-base lg:mt-3">
-          Organize tasks, projects, and workspaces in a single, reliable
-          platform designed for teams and professionals.
-        </p>
-      </div>
-      <HeroDemoBar />
+    <section className="relative flex flex-col items-center text-center mt-5">
+
+      <HeroTag text={heroData.badgeLeft} position="left" />
+      <HeroTag text={heroData.badgeRight} position="right" />
+
+      <h1 className="text-3xl text-primary font-semibold max-w-3xl lg:mx-auto lg:text-4xl">
+        {heroData.headline}
+      </h1>
+
+      <p className="mt-3 text-xs text-muted-foreground max-w-xl mx-auto lg:text-sm">
+        {heroData.description}
+      </p>
+
+      <HeroCTA
+        buttonText={heroData.primaryCTA}
+        subText={heroData.secondaryText}
+        link={heroData.primaryCTALink}
+      />
+
+    </section>
     </div>
   );
-});
+};

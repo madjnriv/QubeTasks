@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type z from "zod";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -62,13 +63,19 @@ const SignUp = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-5">
       <Card className="max-w-md w-full">
-        <CardHeader className="text-center mb-5">
+        <CardHeader className=" mb-5">
           <CardTitle className="text-2xl font-bold">
             Create an account
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Create an account to continue
           </CardDescription>
+
+          <CardAction>
+              <Link to="/" className="text-sm text-muted-foreground underline">
+                Back to Home
+              </Link>
+          </CardAction>
         </CardHeader>
 
         <CardContent>
