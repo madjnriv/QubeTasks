@@ -1,7 +1,7 @@
-import { Hero } from "@/components/public/hero/hero";
+import { Hero } from "@/components/landing/hero/hero";
 import type { Route } from "../../+types/root";
-import { Navbar } from "@/components/public/navbar/Navbar";
-import { WorkflowPreview } from "@/components/public/workflow-preview/workflow-preview";
+import { Navbar } from "@/components/landing/navbar/Navbar";
+import WhyQubeTasks from "@/components/landing/why-qubetasks/WhyQubeTasks";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,7 +15,7 @@ const HomePage = () => {
     <div className="w-full h-screen flex flex-col overflow-y-auto lg:p-4">
       <Navbar />
       <Hero />
-      <WorkflowPreview />
+      <WhyQubeTasks/>
     </div>
   );
 };

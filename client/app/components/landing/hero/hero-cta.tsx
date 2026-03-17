@@ -11,9 +11,9 @@ type Props = {
 
 const HeroCTA = ({ buttonText, subText, link }: Props) => {
   return (
-    <Link to={link}  className="flex items-center -space-x-1 mx-auto mt-5">
-      <Button className="rounded-full">{buttonText}</Button>
-       <Button size={"icon"} className="rounded-full">
+    <Link to={link}  className="flex items-center -space-x-2 mx-auto mt-5 ">
+      <Button  className="rounded-full">{buttonText}</Button>
+       <Button   size={"icon"} className="rounded-full">
             <ArrowUpRight />
         </Button>
     </Link>

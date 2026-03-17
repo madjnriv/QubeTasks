@@ -1,5 +1,5 @@
 import React from "react";
-import { LogoText } from "../../logo";
+import { LogoIcon, LogoText } from "../../logo";
 import {
   Sheet,
   SheetContent,
@@ -9,7 +9,7 @@ import {
 } from "../../ui/sheet";
 import { ArrowUpRight, Menu } from "lucide-react";
 import { Button } from "../../ui/button";
-import { landingNav } from "./navbar-items";
+import { landingNav } from "./navbar.data";
 import { Link, NavLink } from "react-router";
 import {
   NavigationMenu,
@@ -21,8 +21,9 @@ import {
 export const Navbar = React.memo(() => {
   return (
     <div className="flex items-center justify-between p-3 lg:w-[90%] lg:mx-auto">
-      <Link to="/">
-        <LogoText className="text-2xl font-semibold text-primary" />
+      <Link to="/" className="flex items-center">
+        <LogoIcon className="size-10"/>
+        <LogoText className="hidden lg:block text-2xl font-semibold text-primary" />
       </Link>
 
       <div className="flex items-center gap-5 lg:hidden">

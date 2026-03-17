@@ -5,5 +5,5 @@ export const LogoIcon = ({ className }: { className: string }) => {
 };
 
 export const LogoText = ({ className }: { className: string }) => {
-  return <p className={className}> QubeTask</p>;
+  return <p className={className}> QubeTasks</p>;
 };

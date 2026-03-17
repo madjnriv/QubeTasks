@@ -13,7 +13,7 @@ export const Hero = () => {
       <HeroTag text={heroData.badgeLeft} position="left" />
       <HeroTag text={heroData.badgeRight} position="right" />
 
-      <h1 className="text-3xl text-primary font-semibold max-w-3xl lg:mx-auto lg:text-4xl">
+      <h1 className="text-3xl text-primary font-medium max-w-3xl lg:mx-auto lg:text-4xl">
         {heroData.headline}
       </h1>
 
