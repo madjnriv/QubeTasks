@@ -9,7 +9,10 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const decision = await aj.protect(req, { email });
+    const decision = await aj.protect(req, {
+      email,
+      requested: 1,
+    });
     console.log("Arcjet decision", decision.isDenied());
 
     if (decision.isDenied()) {
@@ -34,7 +37,7 @@ const registerUser = async (req, res) => {
     const verificationToken = jwt.sign(
       { userId: newUser._id, purpose: "email-verification" },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     await VerificationModel.create({
@@ -91,7 +94,7 @@ const loginUser = async (req, res) => {
         verificationToken = jwt.sign(
           { userId: user._id, purpose: "email-verification" },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "1h" },
         );
 
         await VerificationModel.create({
@@ -127,7 +130,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, purpose: "login" },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     user.lastLogin = new Date();
@@ -222,7 +225,7 @@ const resetPasswordRequest = async (req, res) => {
     const resetPasswordToken = jwt.sign(
       { userId: user._id, purpose: "password-reset" },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
 
     await VerificationModel.create({
