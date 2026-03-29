@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import VerificationModel from "../models/verification-model.js";
 import { sendEmail } from "../libs/send-email.js";
 import aj from "../libs/arcjet.js";
+import generateUniqueUsername from "../utils/generateUniqueUsername.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -16,8 +17,13 @@ const registerUser = async (req, res) => {
     console.log("Arcjet decision", decision.isDenied());
 
     if (decision.isDenied()) {
-      res.writeHead(403, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: "Invalid email address" }));
+      if (decision.reason.isRateLimit()) {
+        return res.status(429).json({ error: "Too many requests" });
+      }
+      if (decision.reason.isEmail()) {
+        return res.status(400).json({ error: "Invalid or disposable email" });
+      }
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     const existingUser = await UserModel.findOne({ email });
@@ -25,11 +31,14 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email is already in use" });
     }
 
+    const username = await generateUniqueUsername(name);
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await UserModel.create({
       name,
+      username,
       email,
       password: hashedPassword,
     });

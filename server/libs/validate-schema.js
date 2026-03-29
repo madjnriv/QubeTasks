@@ -58,7 +58,7 @@ const projectSchema = z.object({
       z.object({
         user: z.string(),
         role: z.enum(["manager", "contributor", "viewer"]),
-      })
+      }),
     )
     .optional(),
 });
