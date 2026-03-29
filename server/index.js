@@ -4,6 +4,9 @@ import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import routes from "./routes/index-route.js";
+import dns from "node:dns";
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
 
@@ -14,7 +17,7 @@ app.use(
     origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(morgan("dev"));

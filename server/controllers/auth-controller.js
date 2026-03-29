@@ -91,27 +91,27 @@ const loginUser = async (req, res) => {
         userId: user._id,
       });
 
-      let verificationToken;
-
       if (existingVerification && existingVerification.expiresAt > new Date()) {
         return res
           .status(400)
           .json({ message: "Email is not verified. Please check your inbox." });
-      } else {
-        await VerificationModel.findByIdAndDelete(existingVerification._id);
-
-        verificationToken = jwt.sign(
-          { userId: user._id, purpose: "email-verification" },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" },
-        );
-
-        await VerificationModel.create({
-          userId: user._id,
-          token: verificationToken,
-          expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
-        });
       }
+
+      if (existingVerification) {
+        await VerificationModel.findByIdAndDelete(existingVerification._id);
+      }
+
+      const verificationToken = jwt.sign(
+        { userId: user._id, purpose: "email-verification" },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" },
+      );
+
+      await VerificationModel.create({
+        userId: user._id,
+        token: verificationToken,
+        expiresAt: new Date(Date.now() + 3600000),
+      });
 
       // Send verification email logic goes here
       const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;

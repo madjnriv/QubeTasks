@@ -20,8 +20,7 @@ export const sendEmail = async (to, subject, html) => {
 
     return true;
   } catch (error) {
-    console.log("Error sending email:", error);
-
+    console.error("SendGrid Error Details:", error.response?.body || error);
     return false;
   }
 };

@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router";
 import { useSignUpMutation } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MailWarning } from "lucide-react";
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 
@@ -61,10 +63,10 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-5">
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 py-5 px-2">
       <Card className="max-w-md w-full">
         <CardHeader className=" mb-5">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-xl font-bold lg:text-2xl">
             Create an account
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
@@ -72,11 +74,25 @@ const SignUp = () => {
           </CardDescription>
 
           <CardAction>
-              <Link to="/" className="text-sm text-muted-foreground underline">
-                Back to Home
-              </Link>
+            <Link to="/" className="text-sm text-muted-foreground underline">
+              Back to Home
+            </Link>
           </CardAction>
         </CardHeader>
+
+        <div className="px-5">
+          <Alert variant={"destructive"}>
+            <MailWarning className="h-4 w-4 shrink-0" />
+            <AlertTitle className="text-xs">
+              Heads Up: Email Service is Down
+            </AlertTitle>
+            <AlertDescription className="text-xs">
+              We’re having some trouble sending emails right now. You can sign
+              up as usual, but you won't see a confirmation in your inbox just
+              yet. We’re on it!
+            </AlertDescription>
+          </Alert>
+        </div>
 
         <CardContent>
           <Form {...form}>
