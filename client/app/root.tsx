@@ -11,8 +11,6 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import ReactQueryProvider from "./provider/react-query-provider";
 import Loader from "./components/loader";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TooltipProvider } from "./components/ui/tooltip";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -37,10 +35,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <SidebarProvider>
-          <SidebarTrigger />
-          <TooltipProvider>{children}</TooltipProvider>
-        </SidebarProvider>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -63,7 +63,7 @@ const Sidebar = ({
     <div
       className={cn(
         "flex flex-col border-r bg-sidebar transition-all duration-300",
-        isCollapsed ? "w-16 md:w-24" : "w-16 md:w-60"
+        isCollapsed ? "w-16 md:w-24" : "w-16 md:w-60",
       )}
     >
       <div className="flex h-14 items-center border-b px-4 py-9 mb-4">

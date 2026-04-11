@@ -1,5 +1,5 @@
 import Header from "@/components/layout/header";
-import Sidebar from "@/components/layout/sidebar";
+import AppSidebar from "@/components/layout/sidebar";
 import Loader from "@/components/loader";
 import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import { getData } from "@/lib/fetch-utils";
@@ -30,7 +30,7 @@ const DashboardLayout = () => {
   const [isCreatingWorkspace, setIsCreatingWorkspace] =
     useState<boolean>(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkSpace | null>(
-    null
+    null,
   );
 
   const handleWorkspaceSelected = (workspace: WorkSpace) => {
@@ -58,7 +58,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen w-full ">
-      <Sidebar currentWorkspace={currentWorkspace} />
+      <AppSidebar currentWorkspace={currentWorkspace} />
       <div className="flex flex-1 flex-col h-full">
         <Header
           onWorkspaceSelected={handleWorkspaceSelected}
