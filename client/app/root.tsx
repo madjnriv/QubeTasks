@@ -10,6 +10,9 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import ReactQueryProvider from "./provider/react-query-provider";
+import Loader from "./components/loader";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,7 +37,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <SidebarProvider>
+          <SidebarTrigger />
+          <TooltipProvider>{children}</TooltipProvider>
+        </SidebarProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -76,5 +82,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         </pre>
       )}
     </main>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <Loader />
+    </div>
   );
 }
