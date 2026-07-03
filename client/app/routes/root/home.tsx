@@ -20,7 +20,7 @@ export function meta({}: Route.MetaArgs) {
 
 const HomePage = () => {
   return (
-    <div className="w-full h-screen flex flex-col overflow-y-auto lg:p-4">
+    <div className="w-full h-screen flex flex-col overflow-y-auto">
       <Navbar />
       <Hero />
       <WorkflowSection />
